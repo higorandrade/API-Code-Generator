@@ -1,0 +1,13 @@
+using AutoMapper;
+using {{projectName}}.Domain.Model;
+using {{projectName}}.Infra.Entities;
+    
+namespace {{projectName}}.Infra.{{projectName}}Mapper
+{
+    public class DefaultMapper : Profile
+    {
+        public DefaultMapper()
+        {
+        }
+    }
+}

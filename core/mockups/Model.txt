@@ -1,0 +1,9 @@
+using System.Collections.Generic;
+    
+namespace {{projectName}}.Domain.Model
+{
+    public class {{serviceName}}
+    {
+        public long Id { get; set; }{{modelDeclarations}}
+    }
+}

@@ -1,0 +1,16 @@
+using {{projectName}}.Domain.Model;
+using {{projectName}}.Infra.Entities;
+using {{projectName}}.Infra.{{projectName}}Mapper;
+    
+namespace {{projectName}}.Infra.Repository.Interfaces
+{
+    public interface I{{serviceName}}Repository
+    {
+        public Task<{{serviceName}}> GetOne(long id);
+        public Task<ICollection<{{serviceName}}>> GetAll();
+        public Task<{{serviceName}}> Save({{serviceName}} vo);
+        public Task<ICollection<{{serviceName}}>> SaveAll(ICollection<{{serviceName}}> vos);
+        public Task<{{serviceName}}> Patch({{serviceName}} vo);
+        public Task<bool> Delete(long id);
+    }
+}

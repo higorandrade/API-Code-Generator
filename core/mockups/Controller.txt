@@ -1,0 +1,60 @@
+using Microsoft.AspNetCore.Mvc;
+using {{projectName}}.API.Business.Interfaces;
+using {{projectName}}.Domain.Model;
+    
+namespace {{projectName}}.API.Controllers
+{
+    [ApiController]
+    [Route("[controller]")]
+    public class {{serviceName}}Controller : ControllerBase
+    {
+        private readonly I{{serviceName}}Business _business;
+
+        public {{serviceName}}Controller(I{{serviceName}}Business business)
+        {
+            _business = business;
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<{{serviceName}}>> GetOne(long id)
+        {
+            var result = await _business.GetOne(id);
+            return Ok(result);
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<ICollection<{{serviceName}}>>> GetAll()
+        {
+            var result = await _business.GetAll();
+            return Ok(result);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<{{serviceName}}>> Save([FromBody] {{serviceName}} vo)
+        {
+            var result = await _business.Save(vo);
+            return Ok(result);
+        }
+
+        [HttpPost("list")]
+        public async Task<ActionResult<{{serviceName}}>> SaveAll([FromBody] ICollection<{{serviceName}}> vos)
+        {
+            var result = await _business.SaveAll(vos);
+            return Ok(result);
+        }
+
+        [HttpPatch("{id}")]
+        public async Task<ActionResult<{{serviceName}}>> Patch([FromBody] {{serviceName}} vo, long id)
+        {
+            var result = await _business.Patch(vo, id);
+            return Ok(result);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<{{serviceName}}>> Delete(long id)
+        {
+            var result = await _business.Delete(id);
+            return Ok(result);
+        }
+    }
+}

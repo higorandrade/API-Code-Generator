@@ -1,0 +1,6 @@
+
+            
+            modelBuilder.Entity<{{serviceName}}Entity>()
+                .HasMany(x => x.{{relationName}})
+                .WithMany(y => y.{{relationForeignName}})
+                .UsingEntity(z => z.ToTable("T_{{relationTable}}"));

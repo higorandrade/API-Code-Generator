@@ -1,0 +1,47 @@
+using {{projectName}}.API.Business.Interfaces;
+using {{projectName}}.Domain.Model;
+using {{projectName}}.Infra.Repository.Interfaces;
+    
+namespace {{projectName}}.API.Business
+{
+    public class {{serviceName}}Business : I{{serviceName}}Business
+    {
+        protected readonly I{{serviceName}}Repository repository;
+
+        public {{serviceName}}Business(I{{serviceName}}Repository repository)
+        {
+            this.repository = repository;
+        }
+
+        public virtual async Task<{{serviceName}}> GetOne(long id)
+        {
+            return await repository.GetOne(id);
+        }
+
+        public virtual async Task<ICollection<{{serviceName}}>> GetAll()
+        {
+            return await repository.GetAll();
+        }
+
+        public virtual async Task<{{serviceName}}> Save({{serviceName}} vo)
+        {
+            return await repository.Save(vo);
+        }
+
+        public virtual async Task<ICollection<{{serviceName}}>> SaveAll(ICollection<{{serviceName}}> vos)
+        {
+            return await repository.SaveAll(vos);
+        }
+
+        public virtual async Task<{{serviceName}}> Patch({{serviceName}} vo, long id)
+        {
+            vo.Id = id;
+            return await repository.Patch(vo);
+        }
+
+        public virtual async Task<bool> Delete(long id)
+        {
+            return await repository.Delete(id);
+        }
+    }
+}

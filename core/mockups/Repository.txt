@@ -1,0 +1,94 @@
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using {{projectName}}.Domain.Model;
+using {{projectName}}.Infra.Entities;
+using {{projectName}}.Infra.{{projectName}}Mapper;
+using {{projectName}}.Infra.Repository.Interfaces;
+
+namespace {{projectName}}.Infra.Repository
+{
+    public class {{serviceName}}Repository : I{{serviceName}}Repository
+    {
+        private readonly {{projectName}}Context _ctx;
+        private readonly IMapper _mapper;
+
+        public {{serviceName}}Repository({{projectName}}Context ctx)
+        {
+            _ctx = ctx;
+            _mapper = new Mapper(new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile(new DefaultMapper());
+            }));
+        }
+
+        public async Task<{{serviceName}}> GetOne(long id)
+        {
+            var result = await _ctx.{{serviceName}}.FirstOrDefaultAsync(x => x.Id == id);
+            return result != null ? FromEntityToModel(result) : null;
+        }
+        
+        public async Task<ICollection<{{serviceName}}>> GetAll()
+        {
+            var result = await _ctx.{{serviceName}}.ToListAsync();
+            return result.Select(x => FromEntityToModel(x)).ToList();
+        }
+
+        public async Task<{{serviceName}}> Save({{serviceName}} vo)
+        {
+            var entity = FromModelToEntity(vo);
+            await _ctx.{{serviceName}}.AddAsync(entity);
+            await _ctx.SaveChangesAsync();
+
+            return FromEntityToModel(entity);
+        }
+
+        public async Task<ICollection<{{serviceName}}>> SaveAll(ICollection<{{serviceName}}> vos)
+        {
+            var entities = vos.Select(x => FromModelToEntity(x));
+            await _ctx.{{serviceName}}.AddRangeAsync(entities);
+            await _ctx.SaveChangesAsync();
+
+            // TODO: Fix ids not showing on return
+            return entities.Select(x => FromEntityToModel(x)).ToList();
+        }
+
+        public async Task<{{serviceName}}> Patch({{serviceName}} vo)
+        {
+            var x = await _ctx.{{serviceName}}.AsNoTracking().Where(x => x.Id == vo.Id).FirstOrDefaultAsync();
+            if (x == null)
+            {
+                throw new Exception($"Invalid id.");
+            }
+
+            var entity = FromModelToEntity(vo);
+            _ctx.Person.Update(entity);
+            await _ctx.SaveChangesAsync();
+
+            return FromEntityToModel(entity);
+        }
+
+        public async Task<bool> Delete(long id)
+        {
+            var result = await _ctx.{{serviceName}}.FirstOrDefaultAsync(x => x.Id == id);
+            if (result == null)
+            {
+                return false;
+            }
+
+            _ctx.{{serviceName}}.Remove(result);
+            await _ctx.SaveChangesAsync();
+
+            return true;
+        }
+
+        private {{serviceName}} FromEntityToModel({{serviceName}}Entity entity)
+        {
+            return _mapper.Map<{{serviceName}}>(entity);
+        }
+
+        private {{serviceName}}Entity FromModelToEntity({{serviceName}} model)
+        {
+            return _mapper.Map<{{serviceName}}Entity>(model);
+        }
+    }
+}

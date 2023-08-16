@@ -1,0 +1,16 @@
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace {{projectName}}.Infra.Entities
+{
+    [Table("T_||{{serviceName}}||")]
+    public class {{serviceName}}Entity
+    {
+        [Key]
+        [Required]
+        [Column(name: "ID")]
+        public long Id { get; set; }
+        {{entityDeclarations}}
+    }
+}

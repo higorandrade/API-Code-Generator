@@ -1,0 +1,3 @@
+
+        public long{{relationRequired}} Id{{relationName}} { get; set; }
+        public {{relationType}} {{relationName}} { get; set; }

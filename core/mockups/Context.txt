@@ -1,0 +1,18 @@
+using System.IO;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+
+namespace {{projectName}}.Infra
+{
+	public class {{projectName}}Context: DbContext
+	{
+		public {{projectName}}Context(DbContextOptions<{{projectName}}Context> options)
+            : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+        }
+    }
+}

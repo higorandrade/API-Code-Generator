@@ -1,0 +1,6 @@
+
+        [Column(name:"||{{relationName}}||")]
+        public long{{relationRequired}} Id{{relationName}} { get; set; }
+
+        [ForeignKey("Id{{relationName}}")]
+        public {{relationType}}Entity {{relationName}} { get; set; }

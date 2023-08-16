@@ -1,0 +1,14 @@
+using {{projectName}}.Domain.Model;
+
+namespace {{projectName}}.API.Business.Interfaces
+{
+    public interface I{{serviceName}}Business
+    {
+        public Task<{{serviceName}}> GetOne(long id);
+        public Task<ICollection<{{serviceName}}>> GetAll();
+        public Task<{{serviceName}}> Save({{serviceName}} vo);
+        public Task<ICollection<{{serviceName}}>> SaveAll(ICollection<{{serviceName}}> vos);
+        public Task<{{serviceName}}> Patch({{serviceName}} vo, long id);
+        public Task<bool> Delete(long id);
+    }
+}

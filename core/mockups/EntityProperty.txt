@@ -1,0 +1,4 @@
+
+{{entityPropertyRequired}}        [Column(name:"||{{propertyName}}||")]
+        public {{propertyType}} {{propertyName}} { get; set; }
+        

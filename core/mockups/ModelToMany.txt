@@ -1,0 +1,2 @@
+
+        public ICollection<{{relationType}}> {{relationName}} { get; set; }
