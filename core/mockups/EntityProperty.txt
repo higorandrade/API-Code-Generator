@@ -1,4 +1,4 @@
 
 {{entityPropertyRequired}}        [Column(name:"||{{propertyName}}||")]
-        public {{propertyType}} {{propertyName}} { get; set; }
+        public {{propertyType}}{{modelPropertyRequired}} {{propertyName}} { get; set; }{{propertyDefault}}
         

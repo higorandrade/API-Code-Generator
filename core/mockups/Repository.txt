@@ -21,7 +21,7 @@ namespace {{projectName}}.Infra.Repository
             }));
         }
 
-        public async Task<{{serviceName}}> GetOne(long id)
+        public async Task<{{serviceName}}?> GetOne(long id)
         {
             var result = await _ctx.{{serviceName}}.FirstOrDefaultAsync(x => x.Id == id);
             return result != null ? FromEntityToModel(result) : null;
@@ -61,7 +61,7 @@ namespace {{projectName}}.Infra.Repository
             }
 
             var entity = FromModelToEntity(vo);
-            _ctx.Person.Update(entity);
+            _ctx.{{serviceName}}.Update(entity);
             await _ctx.SaveChangesAsync();
 
             return FromEntityToModel(entity);

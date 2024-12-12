@@ -1,7 +1,7 @@
 using {{projectName}}.API.Business.Interfaces;
 using {{projectName}}.Domain.Model;
 using {{projectName}}.Infra.Repository.Interfaces;
-    
+
 namespace {{projectName}}.API.Business
 {
     public class {{serviceName}}Business : I{{serviceName}}Business

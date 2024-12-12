@@ -1,2 +1,2 @@
 
-        public {{propertyType}}{{modelPropertyRequired}} {{propertyName}} { get; set; }
+        public {{propertyType}}{{modelPropertyRequired}} {{propertyName}} { get; set; }{{propertyDefault}}

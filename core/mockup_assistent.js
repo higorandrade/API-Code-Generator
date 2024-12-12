@@ -1,10 +1,14 @@
-const fs = require('fs');
+import { readFileSync, writeFileSync } from 'fs';
+import { dirname } from "path";
+import { fileURLToPath } from "url";
 
 var projectName, serviceName;
 var paths = {};
 var properties = [];
 var relations = [];
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const mockupsPath = `${__dirname}\\mockups`;
 const mockups = [
     {
@@ -47,9 +51,9 @@ const context = {
 const mapper = {
     path: `{{mapperPath}}\\DefaultMapper.cs`,
     content: `${mockupsPath}\\Mapper.txt`,
-}
+};
 
-function createService(_paths, _projectName, _serviceName, _properties, _relations) {
+export function createService(_paths, _projectName, _serviceName, _properties, _relations) {
     paths = _paths;
     projectName = _projectName;
     serviceName = _serviceName;
@@ -58,8 +62,8 @@ function createService(_paths, _projectName, _serviceName, _properties, _relatio
 
     for (const mockup of mockups) {
         const path = replaceAllPaths(mockup.path);
-        const content = replaceAllParams(fs.readFileSync(mockup.content).toString());
-        fs.writeFileSync(path, replaceAllDeclarations(content));
+        const content = replaceAllParams(readFileSync(mockup.content).toString());
+        writeFileSync(path, replaceAllDeclarations(content));
     }
 
     writeContext();
@@ -98,10 +102,20 @@ function replaceAllDeclarations(str) {
 
 function replaceAllProperty(str, property) {
     let propertyReplaced = str
-            .replaceAll(`{{propertyType}}`, `${property.type}`)
-            .replaceAll(`{{propertyName}}`, `${property.name}`)
-            .replaceAll(`{{modelPropertyRequired}}`, `${property.required ? '' : '?'}`)
-            .replaceAll(`{{entityPropertyRequired}}`, `${property.required ? '\t\t[Required]\n' : ''}`)
+      .replaceAll(`{{propertyType}}`, `${property.type}`)
+      .replaceAll(`{{propertyName}}`, `${property.name}`)
+      .replaceAll(
+        `{{propertyDefault}}`,
+        `${property.required && property.type == "string" ? ' = "";' : ""}`
+      )
+      .replaceAll(
+        `{{modelPropertyRequired}}`,
+        `${property.required ? "" : "?"}`
+      )
+      .replaceAll(
+        `{{entityPropertyRequired}}`,
+        `${property.required ? "\t\t[Required]\n" : ""}`
+      );
     return replaceAllParams(propertyReplaced);
 }
 
@@ -116,17 +130,17 @@ function replaceAllRelation(str, relation) {
 }
 
 function readMockupFile(path) {
-    return replaceAllParams(fs.readFileSync(path).toString());
+    return replaceAllParams(readFileSync(path).toString());
 }
 
-function writeNewContext(_paths, _projectName) {
+export function writeNewContext(_paths, _projectName) {
     paths = _paths;
     projectName = _projectName;
 
     const path = replaceAllPaths(context.path);
     let content = getContent(path, context.content);
     
-    fs.writeFileSync(path, content);
+    writeFileSync(path, content);
 }
 
 function writeContext() {
@@ -136,7 +150,7 @@ function writeContext() {
     content = addBeforeIfNotPresent(content, `using ${projectName}.Infra.Entities;\n\n`, `namespace`);
 
     const contextAttribute = replaceAllParams(readMockupFile(context.attribute));
-    content = addAfterIfNotPresent(content, contextAttribute, `${projectName}Context()`, '}');
+    content = addAfterIfNotPresent(content, contextAttribute, `${projectName}Context(`, '}');
 
     const contextRelation = readMockupFile(context.relation);
     let contextModels = '';
@@ -148,7 +162,7 @@ function writeContext() {
 
     content = addAfterIfNotPresent(content, contextModels, `OnModelCreating`, '{');
 
-    fs.writeFileSync(path, content);
+    writeFileSync(path, content);
 }
 
 function writeMapper() {
@@ -158,7 +172,7 @@ function writeMapper() {
     (!isPresent(content, getMapper()))
         content = addAfterIfNotPresent(content, getMapperDeclaration(), `DefaultMapper()`, '{');
 
-    fs.writeFileSync(path, content);
+    writeFileSync(path, content);
 }
 
 function getContent(targetPath, mockupPath) {
@@ -232,7 +246,7 @@ function addBeforeIfNotPresent(content, newContent, query) {
     if (isPresent(content, newContent))
         return content;
 
-    queryIndex = content.indexOf(query);
+    const queryIndex = content.indexOf(query);
     if (queryIndex < 0)
         return content;
     return content.substring(0, queryIndex) + newContent + content.substring(queryIndex);
@@ -242,8 +256,8 @@ function addAfterIfNotPresent(content, newContent, query, reference) {
     if (isPresent(content, newContent))
         return content;
 
-    queryIndex = content.indexOf(query);
-    referenceIndex = content.indexOf(reference, queryIndex);
+    const queryIndex = content.indexOf(query);
+    const referenceIndex = content.indexOf(reference, queryIndex);
     if (queryIndex < 0 || referenceIndex < 0)
         return content;
     return content.substring(0, referenceIndex + reference.length) + newContent + content.substring(referenceIndex + reference.length);
@@ -264,9 +278,4 @@ function relationIsModeled(relation, content) {
     const query1 = getRelationTableName(relation.name, relation.foreignName, relation.table);
     const query2 = getRelationTableName(relation.foreignName, relation.name, relation.table);
     return content.includes(query1) || content.includes(query2);
-}
-
-module.exports = {
-    createService,
-    writeNewContext
 }

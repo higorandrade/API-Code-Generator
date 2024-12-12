@@ -6,7 +6,7 @@ namespace {{projectName}}.Infra.Repository.Interfaces
 {
     public interface I{{serviceName}}Repository
     {
-        public Task<{{serviceName}}> GetOne(long id);
+        public Task<{{serviceName}}?> GetOne(long id);
         public Task<ICollection<{{serviceName}}>> GetAll();
         public Task<{{serviceName}}> Save({{serviceName}} vo);
         public Task<ICollection<{{serviceName}}>> SaveAll(ICollection<{{serviceName}}> vos);

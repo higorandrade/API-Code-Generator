@@ -1,29 +1,17 @@
-const fs = require('fs');
-const pathModule = require('path');
-const execSync = require('child_process').execSync;
-const mockup_assistent = require('./mockup_assistent');
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from 'fs';
+import { basename, join, relative } from 'path';
+import { execSync } from 'child_process';
+import { writeNewContext } from "./mockup_assistent.js";
 
 // TODO: Read framework version from cmd
 const framework = {
     name: 'net',
-    version: '7.0'
+    version: '8.0'
 }
 
 var paths, projectName, connection;
 var domainPath, infraPath, apiPath;
 var domainFile, infraFile, apiFile;
-
-function isGreaterVersion(version, referenceVersion) {
-    versionTokens = version.split('.');
-    referenceTokens = referenceVersion.split('.');
-
-    for (let i=0; i < versionTokens.length; i++) {
-        if (versionTokens[i] < referenceTokens[i])
-            return false;
-    }
-
-    return true;
-}
 
 function getDate() {
     const d = new Date();
@@ -36,7 +24,7 @@ function getDate() {
     return year + month + day + hours + minutes + seconds;
 }
 
-function createProject(_paths, _projectName, _connection) {
+export function createProject(_paths, _projectName, _connection) {
     paths = _paths;
     projectName = _projectName;
     connection = _connection;
@@ -62,26 +50,26 @@ function createProject(_paths, _projectName, _connection) {
         connection.database &&
         connection.username &&
         connection.password) {
-            const content = fs.readFileSync(`${paths.apiPath}\\appsettings.json`).toString();
+            const content = readFileSync(`${paths.apiPath}\\appsettings.json`).toString();
             const connectionString = defaultConnection(connection);
             const newContent = content.substring(0, 1) + connectionString + content.substring(1, content.length + connectionString.length);
-            fs.writeFileSync(`${paths.apiPath}\\appsettings.json`, newContent);
+            writeFileSync(`${paths.apiPath}\\appsettings.json`, newContent);
         }
 }
 
 function createCsproj(path) {
-    fs.mkdirSync(path, { recursive: true });
-    const fileFullPath = `${path}\\${pathModule.basename(path)}.csproj`;
-    fs.writeFileSync(fileFullPath, csprojContent(framework));
+    mkdirSync(path, { recursive: true });
+    const fileFullPath = `${path}\\${basename(path)}.csproj`;
+    writeFileSync(fileFullPath, csprojContent(framework));
     return fileFullPath;
 }
 
 function getCsproj(path) {
     try {
-        const files = fs.readdirSync(path);
+        const files = readdirSync(path);
         for (const file of files) {
             if (file.endsWith('.csproj'))
-                return pathModule.join(path, file);
+                return join(path, file);
         }
     } catch (error) {
         return;
@@ -101,14 +89,13 @@ function initializeInfra() {
     addNpgsql(infraPath);
     addPackage(infraPath, "AutoMapper.Collection");
     addReference(infraPath, domainFile);
-    mockup_assistent.writeNewContext(paths, projectName);
+    writeNewContext(paths, projectName);
     return infraCsprojFile;
 }
 
 function initializeApi() {
-    fs.mkdirSync(apiPath, { recursive: true });
+    mkdirSync(apiPath, { recursive: true });
     execSync('dotnet new webapi', { cwd: apiPath, encoding: 'utf-8' });
-    removeWeatherForecast(apiPath);
     addEntityFramework(apiPath);
     addNpgsql(apiPath);
     addReference(apiPath, domainFile);
@@ -116,23 +103,15 @@ function initializeApi() {
     addAutoFac();
 }
 
-function removeWeatherForecast(path) {
-    fs.unlinkSync(`${path}\\WeatherForecast.cs`);
-    fs.rmSync(`${path}\\Controllers`, { recursive: true });
-}
-
 function addAutoFac() {
     addPackage(apiPath, 'Autofac');
     addPackage(apiPath, 'Autofac.Extensions.DependencyInjection');
 
     const modulesPath = `${apiPath}\\Modules`;
-    fs.mkdirSync(modulesPath, { recursive: true });
+    mkdirSync(modulesPath, { recursive: true });
 
-    fs.writeFileSync(`${modulesPath}\\AutofacModule.cs`, autofacModuleContent(projectName));
-    fs.writeFileSync(`${apiPath}\\Program.cs`, programContent(projectName, apiPath));
-    if (!isGreaterVersion(framework.version, '6.0')) {
-        // TODO: edit startup.cs
-    }
+    writeFileSync(`${modulesPath}\\AutofacModule.cs`, autofacModuleContent(projectName));
+    writeFileSync(`${apiPath}\\Program.cs`, programContent(projectName));
 }
 
 function addNpgsql(path) {
@@ -145,16 +124,19 @@ function addEntityFramework(path) {
     addPackage(path, 'Microsoft.EntityFrameworkCore.Design');
 }
 
-function addPackage(path, package) {
-    execSync(`dotnet add package ${package}`, { cwd: path, encoding: 'utf-8' });
+function addPackage(path, packageName) {
+    execSync(`dotnet add package ${packageName}`, {
+      cwd: path,
+      encoding: "utf-8",
+    });
 }
 
 function addReference(path, reference) {
-    const relativePath = pathModule.relative(path, reference);
+    const relativePath = relative(path, reference);
     execSync(`dotnet add reference ${relativePath}`, { cwd: path, encoding: 'utf-8' });
 }
 
-function execMigration(serviceName, infraPath, apiPath) {
+export function execMigration(serviceName, infraPath, apiPath) {
     execSync(`dotnet ef migrations add ${serviceName}Migration${getDate()} --project ${infraPath}`, { cwd: apiPath, encoding: 'utf-8' });
     execSync(`dotnet ef database update --project ${infraPath}`, { cwd: apiPath, encoding: 'utf-8' });
 }
@@ -166,45 +148,51 @@ function defaultConnection(connection) {
   },`
 }
 
-function programContent(projectName, apiPath) {
-    if (isGreaterVersion(framework.version, '6.0')) {
-        let content = `using Autofac;
+function programContent(projectName) {
+    let content = `using Autofac;
 using Autofac.Extensions.DependencyInjection;
 using ${projectName}.API.Modules;
 using ${projectName}.Infra;
 using Microsoft.EntityFrameworkCore;
-`;
-        const contentFromFile = fs.readFileSync(`${apiPath}\\Program.cs`).toString();
-        content += contentFromFile;
-        builder = 'var builder = WebApplication.CreateBuilder(args);';
-        builderIndex = content.indexOf(builder);
-        endOfLine = content.indexOf(';', builderIndex);
-
-        const autofacString = `
+var builder = WebApplication.CreateBuilder(args);
 
 builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
 builder.Host.ConfigureContainer<ContainerBuilder>(builder => builder.RegisterModule(new AutofacModule()));
 
-builder.Services.AddDbContext<HigorContext>(options => 
-        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));`;
+builder.Services.AddDbContext<${projectName}Context>(options => 
+        options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-        return content.substring(0, endOfLine + 1) + autofacString + content.substring(endOfLine + 1);
-    }
+// Add services to the container.
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+builder.Services.AddControllers();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();`;
+
+    return content;
 }
 
 function csprojContent(framework) {
     let content = `<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>${framework.name}${framework.version}</TargetFramework>`
-
-    if (isGreaterVersion(framework.version, '6.0')) {
-        content += `
+    <TargetFramework>${framework.name}${framework.version}</TargetFramework>
     <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>`;
-    }
-
-    content += `
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
 </Project>`
@@ -220,14 +208,7 @@ namespace ${projectName}.API.Modules
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterAssemblyTypes(typeof(`;
-    
-    if (isGreaterVersion(framework.version, '6.0'))
-        content += 'Program';
-    else 
-        content += 'Startup';
-    
-    content += `).Assembly)
+            builder.RegisterAssemblyTypes(typeof(Program).Assembly)
                 .AsSelf()
                 .AsImplementedInterfaces()
                 .InstancePerLifetimeScope();
@@ -241,8 +222,3 @@ namespace ${projectName}.API.Modules
 
     return content;
 }
-
-module.exports = {
-    createProject,
-    execMigration
-};
