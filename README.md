@@ -52,10 +52,10 @@ The JSON must follow the structure:
 ```
 
 Valid size options for relations are:
-0:1 - Relation to up to 1 element
-N:1 - Relation to at least 1 element
-1:N - Relation of 1 element to many elements
-N:M - Relation of many elements to many elements
+- 0:1 - Relation to up to 1 element
+- N:1 - Relation to at least 1 element
+- 1:N - Relation of 1 element to many elements
+- N:M - Relation of many elements to many elements
 
 ## How to Run
 
