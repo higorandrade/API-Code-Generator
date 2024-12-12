@@ -136,7 +136,6 @@ function run() {
         service.properties,
         service.relations
       );
-      console.log();
     }
   } catch (err) {
     console.error(err);
