@@ -1,0 +1,84 @@
+{
+  "projectName": "TesteProject",
+  "projectPath": "C:\\Users\\higor\\Projetos\\test-generic-csharp-api",
+  "connection": {
+      "host": "localhost",
+      "database": "api-generator-test",
+      "username": "postgres",
+      "password": "postgres"
+  },
+  "services": [
+    {
+      "name": "Person",
+      "properties": [
+        {
+          "name": "Name",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "Age",
+          "type": "int",
+          "required": true
+        }
+      ],
+      "relations": [
+        {
+          "name": "Communities",
+          "type": "Community",
+          "foreignName": "Members",
+          "table": null,
+          "size": "N:M"
+        }
+      ]
+    },
+    {
+      "name": "Address",
+      "properties": [
+        {
+          "name": "Street",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "Number",
+          "type": "int",
+          "required": false
+        },
+        {
+          "name": "City",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "relations": [
+        {
+          "name": "Resident",
+          "type": "Person",
+          "foreignName": "Address",
+          "table": null,
+          "size": "N:1"
+        }
+      ]
+    },
+    {
+      "name": "Community",
+      "properties": [
+        {
+          "name": "Name",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "relations": [
+        {
+          "name": "Members",
+          "type": "Person",
+          "foreignName": "Communities",
+          "table": null,
+          "size": "N:M"
+        }
+      ]
+    }
+  ]
+}

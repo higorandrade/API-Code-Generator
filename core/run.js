@@ -1,4 +1,4 @@
-import { mkdirSync } from 'fs';
+import { readFileSync, mkdirSync } from "fs";
 import { createProject as _createProject, execMigration } from './dotnet_assistent.js';
 import { createService as _createService } from './mockup_assistent.js';
 
@@ -88,115 +88,60 @@ function createService(projectName, projectPath, serviceName, properties, relati
     return msg;
 }
 
-const mock_project = {
-    projectName: "TesteProject",
-    projectPath: "C:\\Users\\higor\\Projetos\\test-generic-csharp-api",
-    connection: {
-        host: "localhost",
-        database: "api-generator-test",
-        username: "postgres",
-        password: "postgres",
-    },
-};
- 
-// createProject(
-//     mock_project.projectName,
-//     mock_project.projectPath,
-//     mock_project.connection
-// );
-
-const person_mock_properties = [
-    {
-        name: "Name",
-        type: "string",
-        required: true,
-    },
-    {
-        name: "Age",
-        type: "int",
-        required: true,
-    },
-];
-
-const person_mock_relations = [
-  {
-    name: "Communities",
-    type: "Community",
-    foreignName: "Members",
-    table: null,
-    size: "N:M",
-  },
-];
-
-createService(
-  mock_project.projectName,
-  mock_project.projectPath,
-  "Person",
-  person_mock_properties,
-  person_mock_relations
-);
-
-const address_mock_properties = [
-  {
-    name: "Street",
-    type: "string",
-    required: true,
-  },
-  {
-    name: "Number",
-    type: "int",
-    required: false,
-  },
-  {
-    name: "City",
-    type: "string",
-    required: false,
-  },
-];
-
-const address_mock_relations = [
-    {
-        name: "Resident",
-        type: "Person",
-        foreignName: "Address",
-        table: null,
-        size: "N:1"
+const getArgs = () =>
+  process.argv.reduce((args, arg) => {
+    // long arg
+    if (arg.slice(0, 2) === "--") {
+      const longArg = arg.split("=");
+      const longArgFlag = longArg[0].slice(2);
+      const longArgValue = longArg.length > 1 ? longArg[1] : true;
+      args[longArgFlag] = longArgValue;
     }
-];
+    // flags
+    else if (arg[0] === "-") {
+      const flags = arg.slice(1).split("");
+      flags.forEach((flag) => {
+        args[flag] = true;
+      });
+    }
+    return args;
+  }, {});
 
-createService(
-  mock_project.projectName,
-  mock_project.projectPath,
-  "Address",
-  address_mock_properties,
-  address_mock_relations
-);
+function run() {
+  try {
+    const args = getArgs();
+    const file_path = args["file"];
 
-const community_mock_properties = [
-  {
-    name: "Name",
-    type: "string",
-    required: true,
+    if (!file_path) {
+      file_path = args["f"];
+    }
+
+    const file = readFileSync("C:\\Users\\higor\\Projetos\\API-Code-Generator\\demo.json");
+    const file_obj = JSON.parse(file);
+
+    if (args["c"]) {
+      // create project
+      createProject(
+        file_obj.projectName,
+        file_obj.projectPath,
+        file_obj.connection
+      );
+    }
+
+    for (const service of file_obj.services) {
+      createService(
+        file_obj.projectName,
+        file_obj.projectPath,
+        service.name,
+        service.properties,
+        service.relations
+      );
+      console.log();
+    }
+  } catch (err) {
+    console.error(err);
+    console.error("Please provide the path to a valid json file via '--file' flag");
   }
-];
+}
 
-const community_mock_relations = [
-  {
-    name: "Members",
-    type: "Person",
-    foreignName: "Communities",
-    table: null,
-    size: "N:M",
-  },
-];
-
-createService(
-  mock_project.projectName,
-  mock_project.projectPath,
-  "Community",
-  community_mock_properties,
-  community_mock_relations,
-  true
-);
-
-export default { createService, createProject };
+run()
