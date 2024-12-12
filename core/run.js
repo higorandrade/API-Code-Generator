@@ -110,13 +110,9 @@ const getArgs = () =>
 function run() {
   try {
     const args = getArgs();
+
     const file_path = args["file"];
-
-    if (!file_path) {
-      file_path = args["f"];
-    }
-
-    const file = readFileSync("C:\\Users\\higor\\Projetos\\API-Code-Generator\\demo.json");
+    const file = readFileSync(file_path);
     const file_obj = JSON.parse(file);
 
     if (args["c"]) {
@@ -139,7 +135,9 @@ function run() {
     }
   } catch (err) {
     console.error(err);
-    console.error("Please provide the path to a valid json file via '--file' flag");
+    console.error(
+      "Please provide the path to a valid json file via '--file' flag"
+    );
   }
 }
 
